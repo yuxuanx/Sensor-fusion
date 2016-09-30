@@ -28,10 +28,10 @@ t0 = [];  % Initial time (initialize on first data received)
 nx = 4;   % Assuming that you use q as state variable.
 % Add your filter settings here.
 f = 100; % Sampling frequency
-alpha = 0.05; % Used in AR filter to rstimate magnetic field
-g0 = [-0.7103;-0.0161;9.7996]; % Nominal gravity vector
+alpha = 0.01; % Used in AR filter to rstimate magnetic field
+g0 = [0;0;9.8]; % Nominal gravity vector
 % Should be estimated from training data
-m0 = [0;sqrt(10.8348^2+19.1457^2);-38.0160]; % Earth magnetic field
+m0 = [0;sqrt(18^2+3^2);-60]; % Earth magnetic field
 L = norm(m0);
 % Process noise (Gyrometer)
 Rw = 10e-7*[35.171 -7.6 -1.76;...
@@ -43,9 +43,9 @@ Ra = 10e-7*[158.74 2.1232 9.3710;...
     9.3710 3.1530 655.80];
 % Should be estimated from training data
 % Measurement noise (Magnetometer)
-Rm = [0.1567 -0.0123 0.0366;...
-    -0.0123 0.1264 0.0035;...
-    0.0366 0.0035 1.2410];
+Rm = [0.1875 -0.0248 -0.0017;...
+    -0.0248 0.1495 0.0341;...
+    -0.0017 0.0341 0.2770];
 
 % Current filter state.
 x = [1; 0; 0 ;0];
@@ -95,37 +95,41 @@ try
         acc = data(1, 2:4)';
         
         if ~any(isnan(acc))  % Acc measurements are available.
-            if norm(acc) > 9.81
-                accOut = 1;
-            else
-                accOut = 0;
+%             if norm(acc) < 9.31 || norm(acc) > 10.31
+%                 accOut = 1;
+%             else
+%                 accOut = 0;
                 [x, P] = mu_g(x, P, acc, Ra, g0);
                 [x, P] = mu_normalizeQ(x, P);
-            end
+%             end
         end
         gyr = data(1, 5:7)';
         if ~any(isnan(gyr))  % Gyro measurements are available.
             [x, P] = tu_qw(x, P, gyr, 1/f, Rw);
             [x, P] = mu_normalizeQ(x, P);
+        else
+            [x, P] = tu_q(x, P, 1/f, Rw);
+            [x, P] = mu_normalizeQ(x, P);
         end
         
         mag = data(1, 8:10)';
         if ~any(isnan(mag))  % Mag measurements are available.
-            if abs(L-norm(mag)) > 10
-                magOut = 1;
-            else
-                magOut = 0;
-            [x, P] = mu_m(x, P, mag, m0, Rm);
-            [x, P] = mu_normalizeQ(x, P);
-            L = (1-alpha)*L + alpha*norm(mag);
-            end
+%             if abs(L-norm(mag)) > 2
+%                 magOut = 1;
+%             else
+%                 magOut = 0;
+%             [x, P] = mu_m(x, P, mag, m0, Rm);
+%             [x, P] = mu_normalizeQ(x, P);
+%             L = (1-alpha)*L + alpha*norm(mag);
+%             end
         end
         
         orientation = data(1, 18:21)';  % Google's orientation estimate.
         
         % Visualize result
         if rem(counter, 10) == 0
-            ownView.setAccDist(accOut);
+%             ownView.setAccDist(accOut);
+%             ownView.setMagDist(magOut);
             setOrientation(ownView, x(1:4));
             title(ownView, 'OWN', 'FontSize', 16);
             if ~any(isnan(orientation))
@@ -134,7 +138,6 @@ try
                     % Used for visualization.
                     googleView = OrientationView('Google filter', gca);
                 end
-                googleView.setMagDist(magOut);
                 setOrientation(googleView, orientation);
                 title(googleView, 'GOOGLE', 'FontSize', 16);
             end
