@@ -15,7 +15,6 @@ for i = 1:len
 end
 
 y_hat = [d + 3*randn(1,200);theta + 0.05*pi*randn(1,200)];
-y_hat = [d;theta];
 
 figure
 plot(Xk(1,:),Xk(2,:),'*')
@@ -29,19 +28,19 @@ title('Sensor measurement')
 xlabel('Distance');
 ylabel('Angle (radians)');
 
-%% Cubature Kalman filter (CA model)
-v_x = diff(Xk(1,:));
-v_y = diff(Xk(2,:));
-
-sigmaCV = 1; % motion noise (setting manually)
+%% Cubature Kalman filter (CV model)
 T = 0.3;
+v_x = diff(Xk(1,:))/T;
+v_y = diff(Xk(2,:))/T;
+
+sigmaCV = 20; % motion noise (setting manually)
 A_cv = kron([1 T;0 1],eye(2));
 Q_cv = sigmaCV^2*kron([T^3/3 T^2/2;T^2/2 T],eye(2));
 R = [3^2 0;0 (0.05*pi)^2];
 
+
 dim = 4;
 P = zeros(dim,dim,len);
-sqrt_P = zeros(dim,dim,len); % storing P^(1/2);
 x = zeros(dim,len);
 P(:,:,1) = eye(dim); % initial covariance
 x(:,1) = [Xk(1,1);Xk(2,1);v_x(1);v_y(1)]; % initial state
@@ -61,7 +60,10 @@ for i = 2:len
 end
 
 figure
-plot(x(1,:),x(2,:))
+plot(x(1,:),x(2,:),'*')
+
+%% Cubature Kalman filter (CA model)
+
 
 
 
