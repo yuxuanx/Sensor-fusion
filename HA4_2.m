@@ -15,7 +15,7 @@ for i = 1:len
 end
 
 y_hat = [d + 3*randn(1,200);theta + 0.05*pi*randn(1,200)];
-y_hat = [d;theta];
+% y_hat = [d;theta];
 
 figure
 plot(Xk(1,:),Xk(2,:),'*')
@@ -66,12 +66,20 @@ title('Estimation of CV model using cubature rule');
 xlabel('X direction')
 ylabel('Y direction')
 
-%% Cubature Kalman filter (CA model)
+figure
+hold on
+plot(x(3,:),x(4,:),'*')
+plot(v_x,v_y)
+title('Velocity estimation of CV model using cubature rule');
+xlabel('X direction')
+ylabel('Y direction')
+legend('estimation','true value')
 
+%% Cubature Kalman filter (CA model)
 a_x = diff(v_x)/T;
 a_y = diff(v_y)/T;
 
-sigmaCA = 10; % motion noise (setting manually)
+sigmaCA = 50; % motion noise (setting manually)
 A_ca = kron([1 T T^2/2;0 1 T;0 0 1],eye(2));
 Q_ca = sigmaCA^2*kron([T^5/20 T^4/8 T^3/6;T^4/8 T^3/3 T^2/2;...
     T^3/6 T^2/2 T],eye(2));
@@ -101,5 +109,15 @@ title('Estimation of CA model using cubature rule');
 xlabel('X direction')
 ylabel('Y direction')
 
+figure
+hold on
+plot(x(3,:),x(4,:),'*')
+plot(v_x,v_y)
+title('Velocity estimation of CV model using cubature rule');
+xlabel('X direction')
+ylabel('Y direction')
+legend('estimation','true value')
+
+%% 
 
 
