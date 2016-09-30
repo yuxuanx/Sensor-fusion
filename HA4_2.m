@@ -15,6 +15,7 @@ for i = 1:len
 end
 
 y_hat = [d + 3*randn(1,200);theta + 0.05*pi*randn(1,200)];
+y_hat = [d;theta];
 
 figure
 plot(Xk(1,:),Xk(2,:),'*')
@@ -32,10 +33,11 @@ ylabel('Angle (radians)');
 v_x = diff(Xk(1,:));
 v_y = diff(Xk(2,:));
 
-sigmaCV = 0.1; % motion noise (setting manually)
+sigmaCV = 1; % motion noise (setting manually)
 T = 0.3;
 A_cv = kron([1 T;0 1],eye(2));
 Q_cv = sigmaCV^2*kron([T^3/3 T^2/2;T^2/2 T],eye(2));
+R = [3^2 0;0 (0.05*pi)^2];
 
 dim = 4;
 P = zeros(dim,dim,len);
@@ -49,8 +51,17 @@ for i = 2:len
     chi = sigmaPoints(x(:,i-1),P(:,:,i-1),dim); % generate sigma points
     x(:,i) = 1/(2*dim)*sum(A_cv*chi,2); % predicted state
     P(:,:,i) = Q_cv + 1/(2*dim)*motionCov(chi,x(:,i),dim); % predicted covariance
-    
+    % Update step
+    chi = sigmaPoints(x(:,i),P(:,:,i),dim);
+    y = 1/(2*dim)*sum(H_meas(chi,dim,s),2);
+    Pxy = 1/(2*dim)*sum(P_xy( chi, x(:,i), y, s, dim ),3);
+    S = R + 1/(2*dim)*sum(measCov( chi, dim, s, y ),3);
+    x(:,i) = x(:,i) + Pxy/S*(y_hat(:,i)-y);
+    P(:,:,i) = P(:,:,i) - Pxy/S*Pxy';
 end
+
+figure
+plot(x(1,:),x(2,:))
 
 
 
