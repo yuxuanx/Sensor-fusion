@@ -34,7 +34,7 @@ T = 0.3;
 v_x = diff(Xk(1,:))/T;
 v_y = diff(Xk(2,:))/T;
 
-sigmaCV = 2.7; % motion noise (setting manually)
+sigmaCV = 2; % motion noise (setting manually)
 
 % dist = zeros(96,1);
 % j = 1;
