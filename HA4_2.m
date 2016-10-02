@@ -263,6 +263,7 @@ se_px = zeros(trial,len);
 se_py = zeros(trial,len);
 se_vx = zeros(trial,len-1);
 se_vy = zeros(trial,len-1);
+covPosterior = zeros(dim,len,trial);
 for t = 1:trial
     y_hat = [d + 3*randn(size(d));theta + 0.015*pi*randn(size(theta))];
     dim = 4;
@@ -285,6 +286,10 @@ for t = 1:trial
         x(:,i) = x(:,i) + Pxy/S*(y_hat(:,i)-y);
         P(:,:,i) = P(:,:,i) - Pxy/S*Pxy';
     end
+    
+    for i = 1:len
+        covPosterior(:,i,t) = diag(P(:,:,i));
+    end
     se_px(t,:) = (x(1,:) - Xk(1,:)).^2;
     se_py(t,:) = (x(2,:) - Xk(2,:)).^2;
     se_vx(t,:) = (x(3,1:end-1) - v_x).^2;
@@ -295,6 +300,16 @@ mse_px = mean(se_px);
 mse_py = mean(se_py);
 mse_vx = mean(se_vx);
 mse_vy = mean(se_vy);
+
+averageCov = mean(covPosterior,3);
+
+figure
+hold on
+plot(averageCov');
+xlabel('time step')
+ylabel('posterior covariance')
+title('Average Posterior covariance of individual state over 100 simulations')
+legend('position x','position y','velocity x','velocity y')
 
 figure
 hold on
