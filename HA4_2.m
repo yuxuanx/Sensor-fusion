@@ -34,6 +34,15 @@ T = 0.3;
 v_x = diff(Xk(1,:))/T;
 v_y = diff(Xk(2,:))/T;
 
+figure
+hold on
+plot(v_x)
+plot(v_y)
+xlabel('time step')
+ylabel('velocity')
+title('Velocity of the target')
+legend('velocity in x direction','velocity in y direction')
+
 sigmaCV = 2; % motion noise (setting manually)
 
 % dist = zeros(96,1);
@@ -75,7 +84,7 @@ end
 figure
 hold on
 plot(x(1,:),x(2,:),'*')
-plot(Xk(1,:),Xk(2,:),'*')
+plot(Xk(1,:),Xk(2,:))
 title('Estimation of CV model using cubature rule');
 legend('estimation','true trajectory')
 xlabel('X direction')
@@ -94,7 +103,16 @@ legend('estimation','true value')
 a_x = diff(v_x)/T;
 a_y = diff(v_y)/T;
 
-sigmaCA = 0.6; % motion noise (setting manually)
+figure
+hold on
+plot(a_x)
+plot(a_y)
+xlabel('time step')
+ylabel('acceleration')
+title('Acceleration of the target')
+legend('Acceleration in x direction','Acceleration in y direction')
+
+sigmaCA = 0.5; % motion noise (setting manually)
 % dist = zeros(96,1);
 % j = 1;
 % for sigmaCA = 0.5:0.1:10
@@ -130,10 +148,13 @@ end
 % end
 
 figure
+hold on
 plot(x(1,:),x(2,:),'*')
+plot(Xk(1,:),Xk(2,:))
 title('Estimation of CA model using cubature rule');
 xlabel('X direction')
 ylabel('Y direction')
+legend('estimation','true value')
 
 figure
 hold on
@@ -192,10 +213,24 @@ end
 
 figure
 hold on
-plot(x_smooth(1,:),x_smooth(2,:),'*')
-title('Estimation of CV model using RTS smoother');
+plot(Xk(1,:),Xk(2,:))
+plot(x_update(1,:),x_update(2,:),'.-')
+plot(x_smooth(1,:),x_smooth(2,:),'o')
+title('Estimation of trajectory using CV model using RTS smoother');
 xlabel('X direction')
 ylabel('Y direction')
+legend('true trajectory','filtering trajectory','smoothing trajectory')
+
+figure
+hold on
+plot(v_x,v_y);
+plot(x_update(3,:),x_update(4,:),'*')
+plot(x_smooth(3,:),x_smooth(4,:),'o')
+title('Estimation of velocity using CV model using RTS smoother');
+xlabel('X direction')
+ylabel('Y direction')
+legend('true velocity','filtering velocity','smoothing velocity')
+
 
 %% No measurements between time step 150~175
 sigmaCV = 2; % motion noise (setting manually)
@@ -250,9 +285,18 @@ end
 
 figure
 hold on
-plot(x_update(1,:),x_update(2,:),'*')
+plot(x_update(1,:),x_update(2,:),'.-')
 plot(x_smooth(1,:),x_smooth(2,:),'*')
-title('Estimation of CV model using RTS smoother');
+title('Estimation of trajectory using CV model using RTS smoother with few time steps missing');
+xlabel('X direction')
+ylabel('Y direction')
+legend('Kalman filtering','RTS smoother')
+
+figure
+hold on
+plot(x_update(3,:),x_update(4,:),'.-')
+plot(x_smooth(3,:),x_smooth(4,:),'*')
+title('Estimation of velocity using CV model using RTS smoother with few time steps missing');
 xlabel('X direction')
 ylabel('Y direction')
 legend('Kalman filtering','RTS smoother')
@@ -318,7 +362,7 @@ plot(mse_py)
 plot(mse_vx)
 plot(mse_vy)
 xlabel('time step')
-ylabel('mean square error')
+ylabel('mean square error for filtering')
 title('Mean square error of individual state over 100 simulations')
 legend('position x','position y','velocity x','velocity y')
 

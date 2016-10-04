@@ -83,6 +83,23 @@ end
 cov_Gauss = sum(covGauss,3);
 Gauss = repmat(mu_Gauss',1,100)+3*sqrtm(cov_Gauss)*[cos(phi);sin(phi)];
 
+
+figure
+subplot(2,1,1)
+plot(epsilon(1,:),epsilon(2,:),'ro','MarkerSize',10)
+title('sigma points in \xi space using Gauss-Hermite')
+xlabel('\xi1')
+ylabel('\xi2')
+subplot(2,1,2)
+plot(sigmaPoints(1,:),sigmaPoints(2,:),'ro','MarkerSize',10)
+title('sigma points in x space using Gauss-Hermite')
+xlabel('X1')
+ylabel('X2')
+
+
+
+
+
 figure
 hold on
 grid on
@@ -90,11 +107,13 @@ plot(d,theta,'*')
 plot(d_hat,theta_hat,'ro','MarkerSize',10)
 plot(Gauss(1,:),Gauss(2,:),'LineWidth',2)
 plot(dtheta(1,:),dtheta(2,:),'LineWidth',2)
+plot(mu_Gauss(1),mu_Gauss(2),'r+','MarkerSize',10)
+plot(mu_dtheta(1),mu_dtheta(2),'g+','MarkerSize',10)
 xlabel('d')
 ylabel('\theta')
 title('Samples and \sigma points plot of [d;\theta] using Gauss-Hermite quadrature')
 legend('Samples','\sigma points','3-\sigma level curve [d;\theta] Gauss-Hermite',...
-    '3-\sigma level curve [d;\theta] Monte Carlo')
+    '3-\sigma level curve [d;\theta] Monte Carlo','Approximated mean value','Mean value of Monte carlo samples')
 
 % Cubature rule
 n = 2;
@@ -110,6 +129,20 @@ for i = 1:2*n
         theta_hat2(i) = theta_hat2(i) + pi;
     end
 end
+
+chis = [sqrt(2) -sqrt(2) 0 0;0 0 sqrt(2) -sqrt(2)];
+
+figure
+subplot(2,1,1)
+plot(chis(1,:),chis(2,:),'ro','MarkerSize',10)
+title('sigma points in \xi space using Cubature')
+xlabel('\xi1')
+ylabel('\xi2')
+subplot(2,1,2)
+plot(chi(1,:),chi(2,:),'ro','MarkerSize',10)
+title('sigma points in x space using Cubature')
+xlabel('X1')
+ylabel('X2')
 
 dt2 = [d_hat2 theta_hat2];
 mu_Cubature = 1/4*sum(dt2);
@@ -127,11 +160,13 @@ plot(d,theta,'*')
 plot(d_hat2,theta_hat2,'ro','MarkerSize',10)
 plot(Cubature(1,:),Cubature(2,:),'LineWidth',2)
 plot(dtheta(1,:),dtheta(2,:),'LineWidth',2)
+plot(mu_Cubature(1),mu_Cubature(2),'r+','MarkerSize',10)
+plot(mu_dtheta(1),mu_dtheta(2),'g+','MarkerSize',10)
 xlabel('d')
 ylabel('\theta')
 title('Samples and \sigma points plot of [d;\theta] using cubature rule')
 legend('Samples','\sigma points','3-\sigma level curve [d;\theta] Cubature',...
-    '3-\sigma level curve [d;\theta] Monte Carlo')
+    '3-\sigma level curve [d;\theta] Monte Carlo','Approximated mean value','Mean value of Monte Carlo samples')
 
 % EKF linearization
 Jaco = [mu(1)/sqrt(mu(1)^2+mu(2)^2) mu(2)/sqrt(mu(1)^2+mu(2)^2);...
@@ -150,7 +185,7 @@ plot(mu_dtheta(1),mu_dtheta(2),'r+','MarkerSize',10);
 plot(mu_y(1),mu_y(2),'g+','MarkerSize',10);
 xlabel('d')
 ylabel('\theta')
-title('Samples and \sigma points plot of [d;\theta] using EKF linearization')
+title('Samples and 3\sigma-region of [d;\theta] using EKF linearization')
 legend('Samples','3-\sigma level curve [d;\theta] EKF',...
     '3-\sigma level curve [d;\theta] Monte Carlo','Mean value of Samples',...
     'Mean value of EKF linearization')
