@@ -174,6 +174,7 @@ R = [3^2 0;0 (0.015*pi)^2];
 
 dim = 4;
 P_predict = zeros(dim,dim,len-1);
+Pkk = zeros(dim,dim,len-1);
 P_update = zeros(dim,dim,len);
 x_predict = zeros(dim,len-1);
 x_update = zeros(dim,len);
@@ -185,6 +186,9 @@ for i = 2:len
     chi = sigmaPoints(x_update(:,i-1),P_update(:,:,i-1),dim); % generate sigma points
     x_predict(:,i-1) = 1/(2*dim)*sum(A_cv*chi,2); % predicted state
     P_predict(:,:,i-1) = Q_cv + 1/(2*dim)*motionCov(A_cv,chi,x_predict(:,i-1),dim); % predicted covariance
+    % Pkk
+    Pkk(:,:,i-1) = 1/(2*dim)*P_kk( A_cv,chi,x_predict(:,i-1),x_update(:,i-1),dim );
+    
     % Update step
     chi = sigmaPoints(x_predict(:,i-1),P_predict(:,:,i-1),dim);
     measurements = H_meas(chi,dim,s);
@@ -203,7 +207,7 @@ P_smooth(:,:,end) = P_update(:,:,end);
 G = zeros(dim,dim,len-1);
 % Backward recursion
 for i = 1:len-1
-    G(:,:,i) = P_update(:,:,end-i)*A_cv'/P_predict(:,:,end-i+1);
+    G(:,:,i) =Pkk(:,:,end-i+1)/P_predict(:,:,end-i+1);
     x_smooth(:,end-i) = x_update(:,end-i) + G(:,:,i)*...
         (x_smooth(:,end-i+1) - x_predict(:,end-i+1));
     P_smooth(:,:,end-i) = P_update(:,:,end-i) + G(:,:,i)*...
