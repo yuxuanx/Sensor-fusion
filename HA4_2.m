@@ -311,37 +311,66 @@ se_px = zeros(trial,len);
 se_py = zeros(trial,len);
 se_vx = zeros(trial,len-1);
 se_vy = zeros(trial,len-1);
-covPosterior = zeros(dim,len,trial);
+covPosterior1 = zeros(dim,len,trial);
+covPosterior2 = zeros(dim,len,trial);
 for t = 1:trial
     y_hat = [d + 3*randn(size(d));theta + 0.015*pi*randn(size(theta))];
     dim = 4;
-    P = zeros(dim,dim,len);
-    x = zeros(dim,len);
-    P(:,:,1) = eye(dim); % initial covariance
-    x(:,1) = [Xk(1,1);Xk(2,1);v_x(1);v_y(1)]; % initial state
+    P_predict = zeros(dim,dim,len-1);
+    Pkk = zeros(dim,dim,len-1);
+    P_update = zeros(dim,dim,len);
+    x_predict = zeros(dim,len-1);
+    x_update = zeros(dim,len);
+    P_update(:,:,1) = eye(dim); % initial covariance
+    x_update(:,1) = [Xk(1,1);Xk(2,1);v_x(1);v_y(1)]; % initial state
     
-    
+    % Forward filtering
     for i = 2:len
-        chi = sigmaPoints(x(:,i-1),P(:,:,i-1),dim); % generate sigma points
-        x(:,i) = 1/(2*dim)*sum(A_cv*chi,2); % predicted state
-        P(:,:,i) = Q_cv + 1/(2*dim)*motionCov(A_cv,chi,x(:,i),dim); % predicted covariance
+        chi = sigmaPoints(x_update(:,i-1),P_update(:,:,i-1),dim); % generate sigma points
+        x_predict(:,i-1) = 1/(2*dim)*sum(A_cv*chi,2); % predicted state
+        P_predict(:,:,i-1) = Q_cv + 1/(2*dim)*motionCov(A_cv,chi,x_predict(:,i-1),dim); % predicted covariance
+        % Pkk
+        Pkk(:,:,i-1) = 1/(2*dim)*P_kk( A_cv,chi,x_predict(:,i-1),x_update(:,i-1),dim );
+        
         % Update step
-        chi = sigmaPoints(x(:,i),P(:,:,i),dim);
+        chi = sigmaPoints(x_predict(:,i-1),P_predict(:,:,i-1),dim);
         measurements = H_meas(chi,dim,s);
         y = 1/(2*dim)*sum(measurements,2);
-        Pxy = 1/(2*dim)*sum(P_xy(measurements, chi, x(:,i), y, dim ),3);
-        S = R + 1/(2*dim)*sum(measCov( measurements, dim, y ),3);
-        x(:,i) = x(:,i) + Pxy/S*(y_hat(:,i)-y);
-        P(:,:,i) = P(:,:,i) - Pxy/S*Pxy';
+        Pxy = 1/(2*dim)*sum(P_xy(measurements,chi,x_predict(:,i-1),y,dim),3);
+        S = R + 1/(2*dim)*sum(measCov(measurements,dim,y),3);
+        x_update(:,i) = x_predict(:,i-1) + Pxy/S*(y_hat(:,i)-y);
+        P_update(:,:,i) = P_predict(:,:,i-1) - Pxy/S*Pxy';
     end
     
-    for i = 1:len
-        covPosterior(:,i,t) = diag(P(:,:,i));
+    
+    x_smooth = zeros(dim,len);
+    P_smooth = zeros(dim,dim,len);
+    x_smooth(:,end) = x_update(:,end);
+    P_smooth(:,:,end) = P_update(:,:,end);
+    G = zeros(dim,dim,len-1);
+    % Backward recursion
+    for i = 1:len-1
+        G(:,:,i) =Pkk(:,:,end-i+1)/P_predict(:,:,end-i+1);
+        x_smooth(:,end-i) = x_update(:,end-i) + G(:,:,i)*...
+            (x_smooth(:,end-i+1) - x_predict(:,end-i+1));
+        P_smooth(:,:,end-i) = P_update(:,:,end-i) + G(:,:,i)*...
+            (P_smooth(:,:,end-i+1) - P_predict(:,:,end-i+1))*G(:,:,i)';
     end
-    se_px(t,:) = (x(1,:) - Xk(1,:)).^2;
-    se_py(t,:) = (x(2,:) - Xk(2,:)).^2;
-    se_vx(t,:) = (x(3,1:end-1) - v_x).^2;
-    se_vy(t,:) = (x(4,1:end-1) - v_y).^2;
+    
+    
+    for i = 1:len
+        covPosterior1(:,i,t) = diag(P_update(:,:,i));
+        covPosterior2(:,i,t) = diag(P_smooth(:,:,i));
+    end
+    se_px(t,:) = (x_update(1,:) - Xk(1,:)).^2;
+    se_py(t,:) = (x_update(2,:) - Xk(2,:)).^2;
+    se_vx(t,:) = (x_update(3,1:end-1) - v_x).^2;
+    se_vy(t,:) = (x_update(4,1:end-1) - v_y).^2;
+    
+    se_px2(t,:) = (x_smooth(1,:) - Xk(1,:)).^2;
+    se_py2(t,:) = (x_smooth(2,:) - Xk(2,:)).^2;
+    se_vx2(t,:) = (x_smooth(3,1:end-1) - v_x).^2;
+    se_vy2(t,:) = (x_smooth(4,1:end-1) - v_y).^2;
     
 end
 mse_px = mean(se_px);
@@ -349,14 +378,30 @@ mse_py = mean(se_py);
 mse_vx = mean(se_vx);
 mse_vy = mean(se_vy);
 
-averageCov = mean(covPosterior,3);
+mse_px2 = mean(se_px2);
+mse_py2 = mean(se_py2);
+mse_vx2 = mean(se_vx2);
+mse_vy2 = mean(se_vy2);
+
+
+averageCov1 = mean(covPosterior1,3);
+averageCov2 = mean(covPosterior2,3);
 
 figure
 hold on
-plot(averageCov');
+plot(averageCov1');
 xlabel('time step')
 ylabel('posterior covariance')
-title('Average Posterior covariance of individual state over 100 simulations')
+title('Average Posterior covariance (filtering) of individual state over 100 simulations')
+legend('position x','position y','velocity x','velocity y')
+
+
+figure
+hold on
+plot(averageCov2');
+xlabel('time step')
+ylabel('posterior covariance')
+title('Average Posterior covariance (smoothing) of individual state over 100 simulations')
 legend('position x','position y','velocity x','velocity y')
 
 figure
@@ -367,7 +412,18 @@ plot(mse_vx)
 plot(mse_vy)
 xlabel('time step')
 ylabel('mean square error for filtering')
-title('Mean square error of individual state over 100 simulations')
+title('Mean square error (filtering) of individual state over 100 simulations')
+legend('position x','position y','velocity x','velocity y')
+
+figure
+hold on
+plot(mse_px2)
+plot(mse_py2)
+plot(mse_vx2)
+plot(mse_vy2)
+xlabel('time step')
+ylabel('mean square error for filtering')
+title('Mean square error (smoothing) of individual state over 100 simulations')
 legend('position x','position y','velocity x','velocity y')
 
 
