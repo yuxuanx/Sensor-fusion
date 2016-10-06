@@ -265,7 +265,7 @@ for i = 2:len
     y = 1/(2*dim)*sum(measurements,2);
     Pxy = 1/(2*dim)*sum(P_xy(measurements,chi,x_predict(:,i-1),y,dim),3);
     S = R + 1/(2*dim)*sum(measCov(measurements,dim,y),3);
-    if i >= 150 && i <= 175
+    if i >= 120 && i <= 150
         x_update(:,i) = x_predict(:,i-1);
         P_update(:,:,i) = P_predict(:,:,i-1);
     else
