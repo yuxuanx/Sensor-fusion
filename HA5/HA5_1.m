@@ -26,7 +26,7 @@ legend('p(x)','p(y|x)')
 
 %% Task b
 % Generate samples from proposal
-n = 200;
+n = 500;
 samples = normrnd(mu_x,sigma_x,n,1);
 pyx = normpdf(0.01*samples.^3,3.5,sqrt(2));
 % y_samples = 0.01*samples.^3 + sqrt(2)*randn(n,1);
@@ -57,21 +57,22 @@ p = find([n;diff(idx);n]);
 values = idx(p(1:end-1));
 instances = diff(p);
 temp = [unique(idx) instances];
-resamples = resamples(unique(idx));
+[~,idx_unique] = unique(idx);
+resamples = resamples(idx_unique);
 n_unique = length(instances);
 w_resample = ones(n_unique,1)/n.*instances;
 
 figure
-hold on
-for i = 1:n
-    plot([samples(i) samples(i)],[0, w(i)],'k');
-end
-for i = 1:n_unique
-    plot([resamples(i) resamples(i)],[0, w_resample(i)],'r');
-end
+subplot(2,1,1)
+stem(samples,w)
 xlabel('samples')
 ylabel('p')
-title('Original and new samples after resampling along with their weights')
+title('Original samples after resampling along with their weights')
+subplot(2,1,2)
+stem(resamples,w_resample)
+xlabel('samples')
+ylabel('p')
+title('New samples after resampling along with their weights')
 
 
 
