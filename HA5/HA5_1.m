@@ -35,7 +35,15 @@ w = w_tilde/(sum(w_tilde));
 E_xy = sum(samples.*w);
 Var_xy = sum(samples.^2.*w) - E_xy^2;
 
+% figure
+% hold on
+% for i = 1:n
+%     plot([samples(i) samples(i)],[0, w(i)],'k');
+% end
+
+
 %% Task c
+% Resampling
 u = sort(rand(n,1));
 px = normpdf(samples,mu_x,sigma_x);
 px_norm = px/sum(px);
@@ -46,6 +54,24 @@ idx = idx2 - (0:n-1)';
 resamples = samples(idx);
 w_resample = ones(n,1)/n;
 E_resample = sum(resamples.*w_resample);
+
+
+p = find([n;diff(idx);n]);
+values = idx(p(1:end-1));
+instances = diff(p);
+temp = [unique(idx) instances];
+resamples = resamples(unique(idx));
+n_unique = length(instances);
+w_resample = ones(n_unique,1)/n.*instances;
+
+figure
+hold on
+for i = 1:n
+    plot([samples(i) samples(i)],[0, w(i)],'k');
+end
+for i = 1:n_unique
+    plot([resamples(i) resamples(i)],[0, w_resample(i)],'r');
+end
 
 
 
