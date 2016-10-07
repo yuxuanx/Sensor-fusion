@@ -1,4 +1,5 @@
 clc;clear
+%% Task a
 mu_x = 3;
 sigma_x = 4;
 x = linspace(mu_x - 3*sigma_x,mu_x + 3*sigma_x,100);
@@ -22,3 +23,25 @@ title('Distribution of p(x) and p(y|x)')
 xlabel('x')
 ylabel('p')
 legend('p(x)','p(y|x)')
+
+%% Task b
+% Generate samples from proposal
+n = 200;
+samples = normrnd(mu_x,sigma_x,n,1);
+pyx = normpdf(0.01*samples.^3,3.5,sqrt(2));
+y_samples = 0.01*samples.^3 + sqrt(2)*randn(n,1);
+w_tilde = 1/n*pyx;
+weight = w_tilde/(sum(w_tilde));
+E_xy = sum(y_samples.*weight);
+Var_xy = sum(y_samples.^2.*weight) - E_xy^2;
+
+
+
+
+
+
+
+
+
+
+
