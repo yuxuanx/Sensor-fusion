@@ -73,7 +73,7 @@ w = zeros(N,T);
 w(:,1) = 1/N*ones(N,1);
 samples = zeros(N,T);
 for i = 2:T
-    samples(:,i-1) = normrnd(x_sis(i-1),q,N,1);
+    samples(:,i-1) = normrnd(samples(:,i-1),q);
     pyx = normpdf(samples(:,i-1),y(i),r);
     w_tilde = w(:,i-1).*pyx;
     w(:,i) = w_tilde/sum(w_tilde);
@@ -103,13 +103,12 @@ hold on
 plot(samples(:,1:end-1)','k-*')
 plot(x_sis(2:end),'Linewidth',2)
 
-PostPlot(samples(:,1:end-1),w(:,2:end),x_hat(2:end)',P(2:end)',N,T-1,0)
+%PostPlot(samples(:,1:end-1),w(:,2:end),x_hat(2:end)',P(2:end)',N,T-1,0)
 
 %% Partical filter with resampling
 x_sir = zeros(T,1);
 x_sir(1) = 2;
 for i = 2:T
-%     samples(:,i-1) = normrnd(x_sir(i-1),q,N,1);
     samples(:,i-1) = normrnd(samples(:,i-1),q);
     pyx = normpdf(samples(:,i-1),y(i),r);
     w_tilde = w(:,i-1).*pyx;
@@ -135,3 +134,5 @@ plot(P_hat)
 xlabel('time step k')
 ylabel('variance')
 title('Variance of state over time')
+
+%PostPlot(samples(:,1:end-1),w(:,2:end),x_hat(2:end)',P(2:end)',N,T-1,1)
