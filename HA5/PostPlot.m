@@ -21,7 +21,7 @@ X       =   linspace(xmin-(xmax-xmin)/3,xmax+(xmax-xmin)/3,800);
 %       density by placing a Gaussian kernel around each particle
 pApprox =   zeros(size(X));   % A vector that will contain the pdf values
 if SIR==0
-    sigma=0.3;               % The std of the kernel. 
+    sigma=0.5;               % The std of the kernel. 
                               % NOTE: the std has to be tuned to obtain a
                               % "nice" illustration.
                               % If you resample, you can set the std to

@@ -4,7 +4,7 @@ clc;clear
 Q = 1.5;
 R = 2.5;
 % The first time step is x_0
-T = 1000+1; % time step
+T = 20+1; % time step
 A = 1;
 H = 1;
 
@@ -62,7 +62,7 @@ title('Variance of state over time')
 
 %% Partical filter without resampling
 % Draw samples from proposal (motion model)
-N = 500;
+N = 200;
 x_sis = zeros(T,1);
 P_hat = zeros(T,1);
 x_sis(1) = 2;
@@ -98,20 +98,29 @@ xlabel('time step k')
 ylabel('variance')
 title('Variance of state over time')
 
-PostPlot(samples(:,1:end-1),w(:,2:end),x_hat(2:end)',P(2:end)',N,T-1,0)
+figure
+hold on
+for i = 1:N
+    plot([T-2,T-1],[samples(i,T-2),samples(i,T-1)],'k')
+end
+plot([T-2,T-1],[x_sis(T-1),x_sis(T)],'r','LineWidth',2)
+
+%PostPlot(samples(:,1:end-1),w(:,2:end),x_hat(2:end)',P(2:end)',N,T-1,0)
 
 %% Partical filter with resampling
+x_sir = zeros(T,1);
+x_sir(1) = 2;
 for i = 2:T
-    samples = normrnd(x_hat(i-1),q,N,1);
-    pyx = normpdf(samples,y(i),r);
-    w_tilde = w.*pyx;
-    w = w_tilde/sum(w_tilde);
-    [samples,w] = resample(samples,w);
-    x_hat(i) = sum(w.*samples);
-    P_hat(i) = mean((x_hat(i)-samples).^2);
+    samples(:,i-1) = normrnd(x_sir(i-1),q,N,1);
+    pyx = normpdf(samples(:,i-1),y(i),r);
+    w_tilde = w(:,i-1).*pyx;
+    w(:,i) = w_tilde/sum(w_tilde);
+    [samples(:,i-1),w(:,i)] = resample(samples(:,i-1),w(:,i));
+    x_sir(i) = sum(w(:,i).*samples(:,i-1));
+    P_hat(i) = mean((x_sir(i)-samples(:,i-1)).^2);
 end
 
-mse_pfre = mean((x-x_hat).^2);
+mse_pfre = mean((x-x_sir).^2);
 
 figure
 subplot(2,1,1)
@@ -128,3 +137,11 @@ xlabel('time step k')
 ylabel('variance')
 title('Variance of state over time')
 
+figure
+hold on
+for i = 1:N
+    plot([T-2,T-1],[samples(i,T-2),samples(i,T-1)],'k')
+end
+plot([T-2,T-1],[x_sir(T-1),x_sir(T)],'r','LineWidth',2)
+
+%PostPlot(samples(:,1:end-1),w(:,2:end),x_hat(2:end)',P(2:end)',N,T-1,1)
