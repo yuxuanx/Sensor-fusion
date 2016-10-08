@@ -1,6 +1,6 @@
-function [u] = isOnRoad(x,y);
+function [u] = isOnRoad(x,y)
 
-n = prod(size(x));
+n = numel(x);
 m = 9;
 %column vectors
 x = reshape(x,n,1); 
