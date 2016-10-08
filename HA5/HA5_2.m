@@ -72,13 +72,14 @@ r = sqrt(R);
 w = zeros(N,T);
 w(:,1) = 1/N*ones(N,1);
 samples = zeros(N,T);
+samples(:,1) = normrnd(x_sis(1),sqrt(P_hat(1)),1,N);
 for i = 2:T
-    samples(:,i-1) = normrnd(samples(:,i-1),q);
-    pyx = normpdf(samples(:,i-1),y(i),r);
+    samples(:,i) = normrnd(samples(:,i-1),q);
+    pyx = normpdf(samples(:,i),y(i),r);
     w_tilde = w(:,i-1).*pyx;
     w(:,i) = w_tilde/sum(w_tilde);
-    x_sis(i) = sum(w(:,i).*samples(:,i-1));
-    P_hat(i) = mean((x_sis(i)-samples(:,i-1)).^2);
+    x_sis(i) = sum(w(:,i).*samples(:,i));
+    P_hat(i) = mean((x_sis(i)-samples(:,i)).^2);
 end
 
 mse_pf = mean((x-x_sis).^2);
@@ -100,22 +101,26 @@ title('Variance of state over time')
 
 figure
 hold on
-plot(samples(:,1:end-1)','k-*')
-plot(x_sis(2:end),'Linewidth',2)
+plot(samples','k-*')
+plot(x_sis,'Linewidth',2)
 
 %PostPlot(samples(:,1:end-1),w(:,2:end),x_hat(2:end)',P(2:end)',N,T-1,0)
 
 %% Partical filter with resampling
 x_sir = zeros(T,1);
 x_sir(1) = 2;
+w = zeros(N,T);
+w(:,1) = 1/N*ones(N,1);
+samples = zeros(N,T);
+samples(:,1) = normrnd(x_sis(1),sqrt(P_hat(1)),1,N);
 for i = 2:T
-    samples(:,i-1) = normrnd(samples(:,i-1),q);
-    pyx = normpdf(samples(:,i-1),y(i),r);
+    samples(:,i) = normrnd(samples(:,i-1),q);
+    pyx = normpdf(samples(:,i),y(i),r);
     w_tilde = w(:,i-1).*pyx;
     w(:,i) = w_tilde/sum(w_tilde);
-    [samples(:,i-1),w(:,i)] = resample(samples(:,i-1),w(:,i));
-    x_sir(i) = sum(w(:,i).*samples(:,i-1));
-    P_hat(i) = mean((x_sir(i)-samples(:,i-1)).^2);
+    [samples(:,i),w(:,i)] = resample(samples(:,i),w(:,i));
+    x_sir(i) = sum(w(:,i).*samples(:,i));
+    P_hat(i) = mean((x_sir(i)-samples(:,i)).^2);
 end
 
 mse_pfre = mean((x-x_sir).^2);
@@ -134,5 +139,10 @@ plot(P_hat)
 xlabel('time step k')
 ylabel('variance')
 title('Variance of state over time')
+
+figure
+hold on
+plot(samples','k-*')
+plot(x_sir,'Linewidth',2)
 
 %PostPlot(samples(:,1:end-1),w(:,2:end),x_hat(2:end)',P(2:end)',N,T-1,1)
