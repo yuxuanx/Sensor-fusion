@@ -35,12 +35,6 @@ w = w_tilde/(sum(w_tilde));
 E_xy = sum(samples.*w);
 Var_xy = mean((E_xy-samples).^2);
 
-% figure
-% hold on
-% for i = 1:n
-%     plot([samples(i) samples(i)],[0, w(i)],'k');
-% end
-
 
 %% Task c
 % Resampling
@@ -54,9 +48,7 @@ w_resample = ones(n,1)/n;
 E_resample = sum(resamples.*w_resample);
 
 p = find([n;diff(idx);n]);
-values = idx(p(1:end-1));
 instances = diff(p);
-temp = [unique(idx) instances];
 [~,idx_unique] = unique(idx);
 resamples = resamples(idx_unique);
 n_unique = length(instances);

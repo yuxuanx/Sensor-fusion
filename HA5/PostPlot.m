@@ -15,13 +15,13 @@ for k= 1:K
 
 % Let us first determine the x-interval of interest:
 xmin    =   min(Xp(:,k)); xmax  =   max(Xp(:,k));
-X       =   linspace(xmin-(xmax-xmin)/3,xmax+(xmax-xmin)/3,80);
+X       =   linspace(xmin-(xmax-xmin)/3,xmax+(xmax-xmin)/3,800);
 
 %       We can now construct a continuous approximation to the posterior
 %       density by placing a Gaussian kernel around each particle
 pApprox =   zeros(size(X));   % A vector that will contain the pdf values
 if SIR==0
-    sigma=1.5;               % The std of the kernel. 
+    sigma=0.3;               % The std of the kernel. 
                               % NOTE: the std has to be tuned to obtain a
                               % "nice" illustration.
                               % If you resample, you can set the std to
@@ -34,7 +34,7 @@ for     i   =   1   :   N
 end
 
 %       We are now ready to plot the densities 
-figure(1)
+figure;
 clf
 plot(X,pApprox,'LineWidth',2)   % This is the PF approximation
 hold on
@@ -47,7 +47,7 @@ end
 %%   Illustrating the weight distribution as a function of time
 [Kmesh,Nmesh] = meshgrid((1:K)', (1:N)');
  
-figure(2)
+figure
 clf
 mesh(Kmesh,Nmesh,W,'LineWidth',2);
 title('Weights, w_k^{(i)}','FontSize',20)
