@@ -62,7 +62,7 @@ title('Variance of state over time')
 
 %% Partical filter without resampling
 % Draw samples from proposal (motion model)
-N = 200;
+N = 100;
 x_sis = zeros(T,1);
 P_hat = zeros(T,1);
 x_sis(1) = 2;
@@ -100,18 +100,17 @@ title('Variance of state over time')
 
 figure
 hold on
-for i = 1:N
-    plot([T-2,T-1],[samples(i,T-2),samples(i,T-1)],'k')
-end
-plot([T-2,T-1],[x_sis(T-1),x_sis(T)],'r','LineWidth',2)
+plot(samples(:,1:end-1)','k-*')
+plot(x_sis(2:end),'Linewidth',2)
 
-%PostPlot(samples(:,1:end-1),w(:,2:end),x_hat(2:end)',P(2:end)',N,T-1,0)
+PostPlot(samples(:,1:end-1),w(:,2:end),x_hat(2:end)',P(2:end)',N,T-1,0)
 
 %% Partical filter with resampling
 x_sir = zeros(T,1);
 x_sir(1) = 2;
 for i = 2:T
-    samples(:,i-1) = normrnd(x_sir(i-1),q,N,1);
+%     samples(:,i-1) = normrnd(x_sir(i-1),q,N,1);
+    samples(:,i-1) = normrnd(samples(:,i-1),q);
     pyx = normpdf(samples(:,i-1),y(i),r);
     w_tilde = w(:,i-1).*pyx;
     w(:,i) = w_tilde/sum(w_tilde);
@@ -136,12 +135,3 @@ plot(P_hat)
 xlabel('time step k')
 ylabel('variance')
 title('Variance of state over time')
-
-figure
-hold on
-for i = 1:N
-    plot([T-2,T-1],[samples(i,T-2),samples(i,T-1)],'k')
-end
-plot([T-2,T-1],[x_sir(T-1),x_sir(T)],'r','LineWidth',2)
-
-%PostPlot(samples(:,1:end-1),w(:,2:end),x_hat(2:end)',P(2:end)',N,T-1,1)
