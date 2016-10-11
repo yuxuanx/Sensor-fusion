@@ -106,7 +106,8 @@ h1 = h1(1);
 h2 = plot(x_sis,'Linewidth',2);
 title('Particle trajectories along with the true trajectory')
 legend([h1,h2],'Particle tarjectories','True trajectory')
-
+xlabel('time step')
+ylabel('Particle position')
 
 
 PostPlot(samples(:,1:end-1),w(:,2:end),x_hat(2:end)',P(2:end)',N,T-1,0)
