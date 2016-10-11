@@ -101,10 +101,15 @@ title('Variance of state over time')
 
 figure
 hold on
-plot(samples','k-*')
-plot(x_sis,'Linewidth',2)
+h1 = plot(samples','k-*');
+h1 = h1(1);
+h2 = plot(x_sis,'Linewidth',2);
+title('Particle trajectories along with the true trajectory')
+legend([h1,h2],'Particle tarjectories','True trajectory')
 
-%PostPlot(samples(:,1:end-1),w(:,2:end),x_hat(2:end)',P(2:end)',N,T-1,0)
+
+
+PostPlot(samples(:,1:end-1),w(:,2:end),x_hat(2:end)',P(2:end)',N,T-1,0)
 
 %% Partical filter with resampling
 x_sir = zeros(T,1);
@@ -112,12 +117,14 @@ x_sir(1) = 2;
 w = zeros(N,T);
 w(:,1) = 1/N*ones(N,1);
 samples = zeros(N,T);
+temp = zeros(N,T);
 samples(:,1) = normrnd(x_sis(1),sqrt(P_hat(1)),1,N);
 for i = 2:T
     samples(:,i) = normrnd(samples(:,i-1),q);
     pyx = normpdf(samples(:,i),y(i),r);
     w_tilde = w(:,i-1).*pyx;
     w(:,i) = w_tilde/sum(w_tilde);
+    temp(:,i) = w(:,i);
     [samples(:,i),w(:,i)] = resample(samples(:,i),w(:,i));
     x_sir(i) = sum(w(:,i).*samples(:,i));
     P_hat(i) = mean((x_sir(i)-samples(:,i)).^2);
@@ -145,4 +152,4 @@ hold on
 plot(samples','k-*')
 plot(x_sir,'Linewidth',2)
 
-%PostPlot(samples(:,1:end-1),w(:,2:end),x_hat(2:end)',P(2:end)',N,T-1,1)
+PostPlot(samples(:,1:end-1),temp(:,2:end),x_hat(2:end)',P(2:end)',N,T-1,1)

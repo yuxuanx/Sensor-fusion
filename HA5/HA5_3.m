@@ -19,14 +19,19 @@ sigma_q = 0.1;
 Q = sigma_q^2*kron([T^3/3 T^2/2;T^2/2 T],eye(2));
 H = [0 0 1 0;0 0 0 1];
 
-N = 10000;
+N = 1000;
 K = size(x_v,2);
 x = zeros(4,K);
 P = zeros(4,4,K);
-x(:,1) = [Xk(:,1);0;0];
-P(:,:,1) = eye(4);
+x(:,1) = [Xk(:,1);x_v(1,1);x_v(2,1)];
+x(:,1) = abs(randn(4,1));
+P(:,:,1) = 10*eye(4);
 samples = zeros(N,4,K);
-samples(:,:,1) = mvnrnd(x(:,1),P(:,:,1),N,1);
+% samples(:,:,1) = mvnrnd(x(:,1),P(:,:,1),N,1);
+xx = 1 + 10*rand(N,1);
+yy = 1 + 8*rand(N,1);
+samples(:,:,1) = [xx yy zeros(N,2)];
+
 w = 1/N*ones(N,1);
 
 for i = 2:K+1
@@ -43,13 +48,15 @@ for i = 2:K+1
     x(:,i) = sum(w.*samples(:,:,i));
 end
 
-figure
-plot(x(1,:),x(2,:))
+% figure
+% plot(x(1,:),x(2,:),'*')
 
 figure
 clf
 hold on
 axis([0.8 11.2 0.8 9.2])
+plot(Xk(1,:),Xk(2,:))
+plot(x(1,:),x(2,:),'-.')
 plot([1+1i 1+9*1i 5+9*1i])
 plot([7+9*1i 11+9*1i 11+1i 7+1i]);plot([5+1i 1+1i])
 plot([2+5.2*1i 2+8.3*1i 4+8.3*1i 4+5.2*1i 2+5.2*1i])%House 1
@@ -63,7 +70,7 @@ plot([8+2.4*1i 8+4*1i 10+4*1i 10+2.4*1i 8+2.4*1i])%House 8
 plot([8+1.7*1i 8+1.8*1i 10+1.8*1i 10+1.7*1i 8+1.7*1i])%House 9
 for i = 2:K
     h = plot(samples(:,1,i),samples(:,2,i),'r.');
-    pause
+    pause(0.2)
     delete(h)
     drawnow;
 end
