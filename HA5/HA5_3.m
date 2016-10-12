@@ -83,12 +83,12 @@ title('Particle filter estimation along with true trajectory')
 xlabel('X position')
 ylabel('Y position')
 legend([h1,h2],'true trajectory','estimated trajectory')
-% for i = 2:K+1
-%     h = plot(samples(:,1,i),samples(:,2,i),'r.');
-%     pause
-%     delete(h)
-%     drawnow;
-% end
+for i = 2:K+1
+    h = plot(samples(:,1,i),samples(:,2,i),'r.');
+    pause
+    delete(h)
+    drawnow;
+end
 
 figure
 subplot(2,1,1)
